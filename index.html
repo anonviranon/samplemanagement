@@ -107,11 +107,9 @@
                         <option>Hospital Putrajaya</option>
                         <option>Hospital Tunku Azizah, Kuala Lumpur</option>
                         <option>Hospital Seberang Jaya</option>
-                        <option>Hospital Selayang</option>.
-                        <option>Hospital Seberang Jaya</option>
+                        <option>Hospital Selayang</option>
                         <option>Institut Perubatan dan Pergigian Termaju, Bertam, Pulau Pinang</option>
                         <option>Pusat Darah Negara</option>
-                    </select>
                     </select>
                 </div>
                 <div class="flex items-end">
@@ -175,6 +173,28 @@
         </header>
 
         <main>
+            <!-- Filter Controls -->
+            <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+                <h2 class="text-lg font-semibold mb-2 text-gray-800">Filter Records</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 items-end">
+                    <input type="text" id="filter-name" placeholder="Filter by Name..." class="p-2 border border-gray-300 rounded-md">
+                    <input type="text" id="filter-id" placeholder="Filter by ID..." class="p-2 border border-gray-300 rounded-md">
+                    <select id="filter-center" class="p-2 border border-gray-300 rounded-md"></select>
+                    <div>
+                        <label for="filter-start-date" class="text-sm text-gray-600">Start Date</label>
+                        <input type="date" id="filter-start-date" class="w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                    <div>
+                        <label for="filter-end-date" class="text-sm text-gray-600">End Date</label>
+                        <input type="date" id="filter-end-date" class="w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                </div>
+                <div class="mt-4 flex space-x-3">
+                    <button onclick="applyFilters()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Filter</button>
+                    <button onclick="clearFilters()" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Clear</button>
+                </div>
+            </div>
+
             <div class="bg-white p-4 rounded-lg shadow-md">
                 <div id="records-loading" class="text-center p-8">
                     <i class="fas fa-spinner fa-spin fa-3x text-blue-500"></i>
@@ -218,8 +238,6 @@
         </div>
     </div>
     
-     <!-- ... (rest of your HTML file above this) ... -->
-
     <div id="toast" class="toast"></div>
 
     <!-- Firebase SDK -->
@@ -228,7 +246,7 @@
 
     <script>
         // ===============================================================
-        // YOUR FIREBASE CONFIGURATION IS NOW PASTED HERE
+        // YOUR FIREBASE CONFIGURATION
         // ===============================================================
         const firebaseConfig = {
             apiKey: "AIzaSyA1Gg00IWkhLdXBrLlmtE0BxXB-bu6f8M8",
@@ -246,6 +264,7 @@
         const recordsCollection = db.collection("bloodTestRecords");
 
         let patientList = [];
+        let allFetchedRecords = []; // Store all records for client-side filtering
 
         function showToast(message) {
             const toast = document.getElementById('toast');
@@ -317,7 +336,6 @@
             const testCenter = document.getElementById('test-center').value;
             const dateSent = new Date();
 
-            // Prepare for printing
             document.getElementById('print-test-center').innerText = testCenter;
             document.getElementById('print-date').innerText = dateSent.toLocaleDateString('en-GB');
             document.getElementById('print-header').classList.remove('hidden');
@@ -326,7 +344,6 @@
 
             document.getElementById('print-header').classList.add('hidden');
 
-            // Save data to Firebase
             const batch = db.batch();
             patientList.forEach(patient => {
                 const newRecordRef = recordsCollection.doc();
@@ -359,63 +376,120 @@
         function showRecordsPage() {
             document.getElementById('main-page').classList.add('hidden');
             document.getElementById('records-page').classList.remove('hidden');
-            fetchRecords();
+            if (allFetchedRecords.length === 0) {
+                fetchRecords();
+            }
         }
 
-        // --- Records Page Functionality ---
+        // --- Records Page & Filtering Functionality ---
         async function fetchRecords() {
-            const recordsList = document.getElementById('records-list');
             const loadingIndicator = document.getElementById('records-loading');
             const tableContainer = document.getElementById('records-table-container');
 
             loadingIndicator.classList.remove('hidden');
             tableContainer.classList.add('hidden');
-            recordsList.innerHTML = '';
 
             try {
                 const snapshot = await recordsCollection.orderBy("dateSent", "desc").get();
-                if (snapshot.empty) {
-                    recordsList.innerHTML = '<tr><td colspan="6" class="text-center p-4">No records found.</td></tr>';
-                    return;
-                }
+                allFetchedRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                populateFilterOptions();
+                renderRecordsTable(allFetchedRecords);
 
-                snapshot.forEach(doc => {
-                    const record = doc.data();
-                    const date = record.dateSent.toDate().toLocaleDateString('en-GB');
-                    const row = `
-                        <tr class="hover:bg-gray-50" id="row-${doc.id}">
-                            <td class="p-3 border border-gray-300" data-field="patientName">${record.patientName}</td>
-                            <td class="p-3 border border-gray-300" data-field="patientId">${record.patientId}</td>
-                            <td class="p-3 border border-gray-300" data-field="testName">${record.testName}</td>
-                            <td class="p-3 border border-gray-300" data-field="testCenter">${record.testCenter}</td>
-                            <td class="p-3 border border-gray-300" data-field="dateSent">${date}</td>
-                            <td class="p-3 border border-gray-300 text-center space-x-3">
-                                <button onclick="openEditModal('${doc.id}')" class="text-blue-500 hover:text-blue-700">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button onclick="deleteRecord('${doc.id}')" class="text-red-500 hover:text-red-700">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                    recordsList.innerHTML += row;
-                });
             } catch (error) {
                 console.error("Error fetching records: ", error);
-                recordsList.innerHTML = `<tr><td colspan="6" class="text-center p-4">Failed to load records. Error: ${error.message}</td></tr>`;
+                document.getElementById('records-list').innerHTML = `<tr><td colspan="6" class="text-center p-4">Failed to load records. Error: ${error.message}</td></tr>`;
             } finally {
                 loadingIndicator.classList.add('hidden');
                 tableContainer.classList.remove('hidden');
             }
         }
-        
+
+        function renderRecordsTable(records) {
+            const recordsListBody = document.getElementById('records-list');
+            recordsListBody.innerHTML = '';
+
+            if (records.length === 0) {
+                recordsListBody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-gray-500">No records match the current filter.</td></tr>';
+                return;
+            }
+
+            records.forEach(record => {
+                const date = record.dateSent.toDate().toLocaleDateString('en-GB');
+                const row = `
+                    <tr class="hover:bg-gray-50" id="row-${record.id}">
+                        <td class="p-3 border border-gray-300" data-field="patientName">${record.patientName}</td>
+                        <td class="p-3 border border-gray-300" data-field="patientId">${record.patientId}</td>
+                        <td class="p-3 border border-gray-300" data-field="testName">${record.testName}</td>
+                        <td class="p-3 border border-gray-300" data-field="testCenter">${record.testCenter}</td>
+                        <td class="p-3 border border-gray-300" data-field="dateSent">${date}</td>
+                        <td class="p-3 border border-gray-300 text-center space-x-3">
+                            <button onclick="openEditModal('${record.id}')" class="text-blue-500 hover:text-blue-700">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteRecord('${record.id}')" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                recordsListBody.innerHTML += row;
+            });
+        }
+
+        function populateFilterOptions() {
+            const centers = [...new Set(allFetchedRecords.map(record => record.testCenter))];
+            const select = document.getElementById('filter-center');
+            select.innerHTML = '<option value="">All Centers</option>';
+            centers.sort().forEach(center => {
+                select.innerHTML += `<option value="${center}">${center}</option>`;
+            });
+        }
+
+        function applyFilters() {
+            const nameFilter = document.getElementById('filter-name').value.toLowerCase();
+            const idFilter = document.getElementById('filter-id').value.toLowerCase();
+            const centerFilter = document.getElementById('filter-center').value;
+            const startDateFilter = document.getElementById('filter-start-date').value;
+            const endDateFilter = document.getElementById('filter-end-date').value;
+
+            let filteredRecords = allFetchedRecords.filter(record => {
+                const recordDate = record.dateSent.toDate();
+
+                const nameMatch = record.patientName.toLowerCase().includes(nameFilter);
+                const idMatch = record.patientId.toLowerCase().includes(idFilter);
+                const centerMatch = centerFilter ? record.testCenter === centerFilter : true;
+                const startDateMatch = startDateFilter ? recordDate >= new Date(startDateFilter) : true;
+                
+                // For end date, we should check against the end of that day
+                let endDateMatch = true;
+                if (endDateFilter) {
+                    const endOfDay = new Date(endDateFilter);
+                    endOfDay.setHours(23, 59, 59, 999);
+                    endDateMatch = recordDate <= endOfDay;
+                }
+                
+                return nameMatch && idMatch && centerMatch && startDateMatch && endDateMatch;
+            });
+
+            renderRecordsTable(filteredRecords);
+        }
+
+        function clearFilters() {
+            document.getElementById('filter-name').value = '';
+            document.getElementById('filter-id').value = '';
+            document.getElementById('filter-center').value = '';
+            document.getElementById('filter-start-date').value = '';
+            document.getElementById('filter-end-date').value = '';
+            renderRecordsTable(allFetchedRecords);
+        }
+
         async function deleteRecord(docId) {
             if (confirm('Are you sure you want to permanently delete this record?')) {
                 try {
                     await recordsCollection.doc(docId).delete();
                     showToast('Record deleted successfully.');
-                    fetchRecords(); // Refresh the list
+                    fetchRecords(); // Refresh the entire list
                 } catch (error) {
                     console.error("Error deleting record: ", error);
                     alert("Failed to delete record. See console for details.");
@@ -425,17 +499,15 @@
 
         function openEditModal(docId) {
             const modal = document.getElementById('edit-modal');
-            const row = document.getElementById(`row-${docId}`);
+            const record = allFetchedRecords.find(r => r.id === docId);
 
-            const dateString = row.querySelector('[data-field="dateSent"]').innerText;
-            const [day, month, year] = dateString.split('/');
-            const isoDate = `${year}-${month}-${day}`;
+            const isoDate = record.dateSent.toDate().toISOString().split('T')[0];
 
             document.getElementById('edit-doc-id').value = docId;
-            document.getElementById('edit-patient-name').value = row.querySelector('[data-field="patientName"]').innerText;
-            document.getElementById('edit-patient-id').value = row.querySelector('[data-field="patientId"]').innerText;
-            document.getElementById('edit-test-name').value = row.querySelector('[data-field="testName"]').innerText;
-            document.getElementById('edit-test-center').value = row.querySelector('[data-field="testCenter"]').innerText;
+            document.getElementById('edit-patient-name').value = record.patientName;
+            document.getElementById('edit-patient-id').value = record.patientId;
+            document.getElementById('edit-test-name').value = record.testName;
+            document.getElementById('edit-test-center').value = record.testCenter;
             document.getElementById('edit-date-sent').value = isoDate;
             
             modal.style.display = "block";
@@ -466,7 +538,6 @@
             }
         }
 
-        // Close modal if user clicks outside of it
         window.onclick = function(event) {
             const modal = document.getElementById('edit-modal');
             if (event.target == modal) {
