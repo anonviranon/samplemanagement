@@ -22,6 +22,7 @@
             overflow: auto; /* Enable scroll if needed */
             background-color: rgb(0,0,0); /* Fallback color */
             background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            transition: opacity 0.3s ease;
         }
         .modal-content {
             background-color: #fefefe;
@@ -31,6 +32,27 @@
             width: 80%;
             max-width: 500px;
             border-radius: 0.5rem;
+        }
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 2px;
+            padding: 16px;
+            position: fixed;
+            z-index: 100;
+            left: 50%;
+            bottom: 30px;
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s, visibility 0.3s;
+        }
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
         }
         @media print {
             body * {
@@ -90,6 +112,7 @@
                         <option>Institut Perubatan dan Pergigian Termaju, Bertam, Pulau Pinang</option>
                         <option>Pusat Darah Negara</option>
                     </select>
+                    </select>
                 </div>
                 <div class="flex items-end">
                     <button onclick="printAndSave()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
@@ -138,10 +161,6 @@
                         <!-- Patient rows will be inserted here -->
                     </tbody>
                 </table>
-                 <div id="loading-spinner" class="text-center p-8 hidden">
-                    <i class="fas fa-spinner fa-spin fa-3x text-blue-500"></i>
-                    <p class="mt-2 text-gray-600">Saving data...</p>
-                </div>
             </div>
         </main>
     </div>
@@ -184,13 +203,13 @@
     <div id="edit-modal" class="modal">
         <div class="modal-content shadow-lg">
             <h2 class="text-lg font-semibold mb-4">Edit Record</h2>
-            <input type="hidden" id="edit-row-id">
+            <input type="hidden" id="edit-doc-id">
             <div class="space-y-4">
                 <input type="text" id="edit-patient-name" placeholder="Patient's Name" class="w-full p-2 border border-gray-300 rounded-md">
                 <input type="text" id="edit-patient-id" placeholder="ID Number" class="w-full p-2 border border-gray-300 rounded-md">
                 <input type="text" id="edit-test-name" placeholder="Test Name" class="w-full p-2 border border-gray-300 rounded-md">
                 <input type="text" id="edit-test-center" placeholder="Test Center" class="w-full p-2 border border-gray-300 rounded-md">
-                <input type="text" id="edit-date-sent" placeholder="Date Sent" class="w-full p-2 border border-gray-300 rounded-md">
+                <input type="date" id="edit-date-sent" class="w-full p-2 border border-gray-300 rounded-md">
             </div>
             <div class="mt-6 flex justify-end space-x-3">
                 <button onclick="closeModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">Cancel</button>
@@ -198,13 +217,40 @@
             </div>
         </div>
     </div>
+    
+    <div id="toast" class="toast"></div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // IMPORTANT: Replace with your actual Google Apps Script Web App URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/1yK_wi95TT-JB_r6A6CdROr2l8YRpuoDt1poffq5z8kFWp30UxUfbtNXM/exec';
+        // ===============================================================
+        // PASTE YOUR FIREBASE CONFIGURATION OBJECT HERE
+        // ===============================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSy...YOUR_API_KEY",
+            authDomain: "your-project-id.firebaseapp.com",
+            projectId: "your-project-id",
+            storageBucket: "your-project-id.appspot.com",
+            messagingSenderId: "your-sender-id",
+            appId: "1:your-sender-id:web:your-app-id"
+        };
+        // ===============================================================
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const recordsCollection = db.collection("bloodTestRecords");
 
         let patientList = [];
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
 
         function addPatient() {
             const name = document.getElementById('patient-name').value.trim();
@@ -226,6 +272,10 @@
         function renderTable() {
             const tableBody = document.getElementById('test-list');
             tableBody.innerHTML = '';
+            if (patientList.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="text-center p-4 text-gray-500">No patients added to the current list.</td></tr>`;
+                return;
+            }
             patientList.forEach((patient, index) => {
                 const row = `
                     <tr class="hover:bg-gray-50">
@@ -256,58 +306,45 @@
             }
         }
 
-        function printAndSave() {
+        async function printAndSave() {
             if (patientList.length === 0) {
                 alert("The list is empty. Please add patients before printing.");
                 return;
             }
 
             const testCenter = document.getElementById('test-center').value;
-            const dateSent = new Date().toLocaleDateString('en-GB'); // Format: DD/MM/YYYY
+            const dateSent = new Date();
 
             // Prepare for printing
             document.getElementById('print-test-center').innerText = testCenter;
-            document.getElementById('print-date').innerText = dateSent;
+            document.getElementById('print-date').innerText = dateSent.toLocaleDateString('en-GB');
             document.getElementById('print-header').classList.remove('hidden');
             
-            // Print
             window.print();
 
-            // Hide print header again after print dialog
             document.getElementById('print-header').classList.add('hidden');
 
-            // Save data to Google Sheet
-            saveData(testCenter, dateSent);
-        }
-
-        async function saveData(testCenter, dateSent) {
-            document.getElementById('loading-spinner').classList.remove('hidden');
-            const dataToSave = patientList.map(patient => ({
-                patientName: patient.name,
-                patientId: patient.id,
-                testName: patient.test,
-                testCenter: testCenter,
-                dateSent: dateSent
-            }));
+            // Save data to Firebase
+            const batch = db.batch();
+            patientList.forEach(patient => {
+                const newRecordRef = recordsCollection.doc();
+                batch.set(newRecordRef, {
+                    patientName: patient.name,
+                    patientId: patient.id,
+                    testName: patient.test,
+                    testCenter: testCenter,
+                    dateSent: firebase.firestore.Timestamp.fromDate(dateSent)
+                });
+            });
 
             try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', // Important for simple POST requests to Apps Script
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ action: 'addRecords', data: dataToSave })
-                });
-                // Since it's a no-cors request, we can't read the response.
-                // We'll assume success and give user feedback.
-                alert('Data saved successfully!');
-                
+                await batch.commit();
+                showToast('List saved successfully!');
+                patientList = [];
+                renderTable();
             } catch (error) {
-                console.error('Error saving data:', error);
-                alert('An error occurred while saving the data. Please check the console.');
-            } finally {
-                 document.getElementById('loading-spinner').classList.add('hidden');
+                console.error("Error saving data to Firebase: ", error);
+                alert("An error occurred while saving the data. See console for details.");
             }
         }
         
@@ -334,49 +371,70 @@
             recordsList.innerHTML = '';
 
             try {
-                const response = await fetch(`${SCRIPT_URL}?action=getRecords`);
-                const result = await response.json();
-                
-                if (result.success && result.data) {
-                    result.data.forEach(record => {
-                        const row = `
-                            <tr class="hover:bg-gray-50" id="row-${record.rowId}">
-                                <td class="p-3 border border-gray-300" data-field="patientName">${record.patientName}</td>
-                                <td class="p-3 border border-gray-300" data-field="patientId">${record.patientId}</td>
-                                <td class="p-3 border border-gray-300" data-field="testName">${record.testName}</td>
-                                <td class="p-3 border border-gray-300" data-field="testCenter">${record.testCenter}</td>
-                                <td class="p-3 border border-gray-300" data-field="dateSent">${record.dateSent}</td>
-                                <td class="p-3 border border-gray-300 text-center">
-                                    <button onclick="openEditModal('${record.rowId}')" class="text-blue-500 hover:text-blue-700">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `;
-                        recordsList.innerHTML += row;
-                    });
-                } else {
-                    recordsList.innerHTML = '<tr><td colspan="6" class="text-center p-4">No records found or an error occurred.</td></tr>';
+                const snapshot = await recordsCollection.orderBy("dateSent", "desc").get();
+                if (snapshot.empty) {
+                    recordsList.innerHTML = '<tr><td colspan="6" class="text-center p-4">No records found.</td></tr>';
+                    return;
                 }
+
+                snapshot.forEach(doc => {
+                    const record = doc.data();
+                    const date = record.dateSent.toDate().toLocaleDateString('en-GB');
+                    const row = `
+                        <tr class="hover:bg-gray-50" id="row-${doc.id}">
+                            <td class="p-3 border border-gray-300" data-field="patientName">${record.patientName}</td>
+                            <td class="p-3 border border-gray-300" data-field="patientId">${record.patientId}</td>
+                            <td class="p-3 border border-gray-300" data-field="testName">${record.testName}</td>
+                            <td class="p-3 border border-gray-300" data-field="testCenter">${record.testCenter}</td>
+                            <td class="p-3 border border-gray-300" data-field="dateSent">${date}</td>
+                            <td class="p-3 border border-gray-300 text-center space-x-3">
+                                <button onclick="openEditModal('${doc.id}')" class="text-blue-500 hover:text-blue-700">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteRecord('${doc.id}')" class="text-red-500 hover:text-red-700">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    recordsList.innerHTML += row;
+                });
             } catch (error) {
-                console.error('Error fetching records:', error);
+                console.error("Error fetching records: ", error);
                 recordsList.innerHTML = `<tr><td colspan="6" class="text-center p-4">Failed to load records. Error: ${error.message}</td></tr>`;
             } finally {
                 loadingIndicator.classList.add('hidden');
                 tableContainer.classList.remove('hidden');
             }
         }
+        
+        async function deleteRecord(docId) {
+            if (confirm('Are you sure you want to permanently delete this record?')) {
+                try {
+                    await recordsCollection.doc(docId).delete();
+                    showToast('Record deleted successfully.');
+                    fetchRecords(); // Refresh the list
+                } catch (error) {
+                    console.error("Error deleting record: ", error);
+                    alert("Failed to delete record. See console for details.");
+                }
+            }
+        }
 
-        function openEditModal(rowId) {
+        function openEditModal(docId) {
             const modal = document.getElementById('edit-modal');
-            const row = document.getElementById(`row-${rowId}`);
+            const row = document.getElementById(`row-${docId}`);
 
-            document.getElementById('edit-row-id').value = rowId;
+            const dateString = row.querySelector('[data-field="dateSent"]').innerText;
+            const [day, month, year] = dateString.split('/');
+            const isoDate = `${year}-${month}-${day}`;
+
+            document.getElementById('edit-doc-id').value = docId;
             document.getElementById('edit-patient-name').value = row.querySelector('[data-field="patientName"]').innerText;
             document.getElementById('edit-patient-id').value = row.querySelector('[data-field="patientId"]').innerText;
             document.getElementById('edit-test-name').value = row.querySelector('[data-field="testName"]').innerText;
             document.getElementById('edit-test-center').value = row.querySelector('[data-field="testCenter"]').innerText;
-            document.getElementById('edit-date-sent').value = row.querySelector('[data-field="dateSent"]').innerText;
+            document.getElementById('edit-date-sent').value = isoDate;
             
             modal.style.display = "block";
         }
@@ -386,28 +444,20 @@
         }
 
         async function saveEditedRecord() {
-            const rowId = document.getElementById('edit-row-id').value;
+            const docId = document.getElementById('edit-doc-id').value;
             const updatedRecord = {
-                rowId: rowId,
                 patientName: document.getElementById('edit-patient-name').value,
                 patientId: document.getElementById('edit-patient-id').value,
                 testName: document.getElementById('edit-test-name').value,
                 testCenter: document.getElementById('edit-test-center').value,
-                dateSent: document.getElementById('edit-date-sent').value,
+                dateSent: firebase.firestore.Timestamp.fromDate(new Date(document.getElementById('edit-date-sent').value)),
             };
 
             try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'updateRecord', data: updatedRecord })
-                });
-
-                alert('Record updated successfully! The list will now refresh.');
+                await recordsCollection.doc(docId).update(updatedRecord);
+                showToast('Record updated successfully!');
                 closeModal();
                 fetchRecords(); // Refresh the list to show changes
-
             } catch (error) {
                 console.error('Error updating record:', error);
                 alert('An error occurred while updating the record.');
