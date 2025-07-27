@@ -487,10 +487,21 @@
             }
 
             const printArea = document.getElementById('filtered-print-section');
+            const centerFilterValue = document.getElementById('filter-center').value;
+            const testCenter = centerFilterValue || "All Centers";
+            const printDate = new Date().toLocaleDateString('en-GB');
+
             let printContent = `
                 <div class="p-8">
-                    <h2 class="text-xl font-bold text-center mb-4">Filtered Blood Test Records</h2>
-                    <p class="text-center mb-4">Printed on: ${new Date().toLocaleString('en-GB')}</p>
+                    <h2 class="text-xl font-bold text-center">SENARAI UJIAN DARAH</h2>
+                    <div class="flex justify-between mt-2 mb-4">
+                        <div>
+                            <strong>Pusat:</strong> <span>${testCenter}</span>
+                        </div>
+                        <div>
+                            <strong>Tarikh Cetak:</strong> <span>${printDate}</span>
+                        </div>
+                    </div>
                     <table class="w-full border-collapse">
                         <thead>
                             <tr class="bg-gray-200">
