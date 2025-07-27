@@ -58,10 +58,11 @@
             body * {
                 visibility: hidden;
             }
-            #print-section, #print-section * {
+            #print-section, #print-section *,
+            #filtered-print-section, #filtered-print-section * {
                 visibility: visible;
             }
-            #print-section {
+            #print-section, #filtered-print-section {
                 position: absolute;
                 left: 0;
                 top: 0;
@@ -135,10 +136,10 @@
             <!-- Test List Table -->
             <div id="print-section" class="bg-white p-4 rounded-lg shadow-md">
                  <div class="mb-4 hidden" id="print-header">
-                    <h2 class="text-xl font-bold text-center">HOSPITAL BALING : PERMOHONAN UJIAN DARAH</h2>
+                    <h2 class="text-xl font-bold text-center">SENARAI UJIAN DARAH</h2>
                     <div class="flex justify-between mt-2">
                         <div>
-                            <strong>Pusat Ujian:</strong> <span id="print-test-center"></span>
+                            <strong>Pusat:</strong> <span id="print-test-center"></span>
                         </div>
                         <div>
                             <strong>Tarikh Hantar:</strong> <span id="print-date"></span>
@@ -174,24 +175,21 @@
 
         <main>
             <!-- Filter Controls -->
-            <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+            <div class="bg-white p-4 rounded-lg shadow-md mb-6 no-print">
                 <h2 class="text-lg font-semibold mb-2 text-gray-800">Filter Records</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 items-end">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                     <input type="text" id="filter-name" placeholder="Filter by Name..." class="p-2 border border-gray-300 rounded-md">
                     <input type="text" id="filter-id" placeholder="Filter by ID..." class="p-2 border border-gray-300 rounded-md">
                     <select id="filter-center" class="p-2 border border-gray-300 rounded-md"></select>
                     <div>
-                        <label for="filter-start-date" class="text-sm text-gray-600">Start Date</label>
-                        <input type="date" id="filter-start-date" class="w-full p-2 border border-gray-300 rounded-md">
-                    </div>
-                    <div>
-                        <label for="filter-end-date" class="text-sm text-gray-600">End Date</label>
-                        <input type="date" id="filter-end-date" class="w-full p-2 border border-gray-300 rounded-md">
+                        <label for="filter-date" class="text-sm text-gray-600">Filter by Date</label>
+                        <input type="date" id="filter-date" class="w-full p-2 border border-gray-300 rounded-md">
                     </div>
                 </div>
                 <div class="mt-4 flex space-x-3">
                     <button onclick="applyFilters()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Filter</button>
                     <button onclick="clearFilters()" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Clear</button>
+                    <button onclick="printFiltered()" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg"><i class="fas fa-print mr-2"></i>Print Filtered</button>
                 </div>
             </div>
 
@@ -208,7 +206,7 @@
                             <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Test Name</th>
                             <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Test Center</th>
                             <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Date Sent</th>
-                            <th class="p-3 text-center text-sm font-semibold text-gray-700 border border-gray-300">Actions</th>
+                            <th class="p-3 text-center text-sm font-semibold text-gray-700 border border-gray-300 no-print">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="records-list">
@@ -239,6 +237,7 @@
     </div>
     
     <div id="toast" class="toast"></div>
+    <div id="filtered-print-section" class="hidden"></div>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -265,6 +264,7 @@
 
         let patientList = [];
         let allFetchedRecords = []; // Store all records for client-side filtering
+        let currentlyDisplayedRecords = []; // Store currently visible records for printing
 
         function showToast(message) {
             const toast = document.getElementById('toast');
@@ -406,6 +406,7 @@
         }
 
         function renderRecordsTable(records) {
+            currentlyDisplayedRecords = records; // Store for printing
             const recordsListBody = document.getElementById('records-list');
             recordsListBody.innerHTML = '';
 
@@ -423,7 +424,7 @@
                         <td class="p-3 border border-gray-300" data-field="testName">${record.testName}</td>
                         <td class="p-3 border border-gray-300" data-field="testCenter">${record.testCenter}</td>
                         <td class="p-3 border border-gray-300" data-field="dateSent">${date}</td>
-                        <td class="p-3 border border-gray-300 text-center space-x-3">
+                        <td class="p-3 border border-gray-300 text-center space-x-3 no-print">
                             <button onclick="openEditModal('${record.id}')" class="text-blue-500 hover:text-blue-700">
                                 <i class="fas fa-edit"></i>
                             </button>
@@ -450,26 +451,22 @@
             const nameFilter = document.getElementById('filter-name').value.toLowerCase();
             const idFilter = document.getElementById('filter-id').value.toLowerCase();
             const centerFilter = document.getElementById('filter-center').value;
-            const startDateFilter = document.getElementById('filter-start-date').value;
-            const endDateFilter = document.getElementById('filter-end-date').value;
+            const dateFilter = document.getElementById('filter-date').value;
 
             let filteredRecords = allFetchedRecords.filter(record => {
-                const recordDate = record.dateSent.toDate();
-
                 const nameMatch = record.patientName.toLowerCase().includes(nameFilter);
                 const idMatch = record.patientId.toLowerCase().includes(idFilter);
                 const centerMatch = centerFilter ? record.testCenter === centerFilter : true;
-                const startDateMatch = startDateFilter ? recordDate >= new Date(startDateFilter) : true;
                 
-                // For end date, we should check against the end of that day
-                let endDateMatch = true;
-                if (endDateFilter) {
-                    const endOfDay = new Date(endDateFilter);
-                    endOfDay.setHours(23, 59, 59, 999);
-                    endDateMatch = recordDate <= endOfDay;
+                let dateMatch = true;
+                if (dateFilter) {
+                    const parts = dateFilter.split('-'); // YYYY-MM-DD
+                    const filterDate = new Date(parts[0], parts[1] - 1, parts[2]);
+                    const recordDate = record.dateSent.toDate();
+                    dateMatch = recordDate.toDateString() === filterDate.toDateString();
                 }
                 
-                return nameMatch && idMatch && centerMatch && startDateMatch && endDateMatch;
+                return nameMatch && idMatch && centerMatch && dateMatch;
             });
 
             renderRecordsTable(filteredRecords);
@@ -479,9 +476,58 @@
             document.getElementById('filter-name').value = '';
             document.getElementById('filter-id').value = '';
             document.getElementById('filter-center').value = '';
-            document.getElementById('filter-start-date').value = '';
-            document.getElementById('filter-end-date').value = '';
+            document.getElementById('filter-date').value = '';
             renderRecordsTable(allFetchedRecords);
+        }
+
+        function printFiltered() {
+            if (currentlyDisplayedRecords.length === 0) {
+                alert("There are no records to print.");
+                return;
+            }
+
+            const printArea = document.getElementById('filtered-print-section');
+            let printContent = `
+                <div class="p-8">
+                    <h2 class="text-xl font-bold text-center mb-4">Filtered Blood Test Records</h2>
+                    <p class="text-center mb-4">Printed on: ${new Date().toLocaleString('en-GB')}</p>
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Patient's Name</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">ID Number</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Test Name</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Test Center</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Date Sent</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            currentlyDisplayedRecords.forEach(record => {
+                const date = record.dateSent.toDate().toLocaleDateString('en-GB');
+                printContent += `
+                    <tr>
+                        <td class="p-3 border border-gray-300">${record.patientName}</td>
+                        <td class="p-3 border border-gray-300">${record.patientId}</td>
+                        <td class="p-3 border border-gray-300">${record.testName}</td>
+                        <td class="p-3 border border-gray-300">${record.testCenter}</td>
+                        <td class="p-3 border border-gray-300">${date}</td>
+                    </tr>
+                `;
+            });
+
+            printContent += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            printArea.innerHTML = printContent;
+            printArea.classList.remove('hidden');
+            window.print();
+            printArea.classList.add('hidden');
+            printArea.innerHTML = '';
         }
 
         async function deleteRecord(docId) {
