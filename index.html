@@ -7,6 +7,26 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+
+    <!-- PWA & Favicon Configuration -->
+    <meta name="theme-color" content="#ffffff">
+    <!-- Using your custom logo. Ensure 'assets/experiment.png' is in your project folder. -->
+    <link rel="icon" href="./assets/experiment.png" type="image/png">
+    <link rel="apple-touch-icon" href="./assets/experiment.png">
+    <link rel="manifest" href="data:application/manifest+json,{
+        &quot;name&quot;: &quot;Blood Test Records HB&quot;,
+        &quot;short_name&quot;: &quot;HB Records&quot;,
+        &quot;start_url&quot;: &quot;.&quot;,
+        &quot;display&quot;: &quot;standalone&quot;,
+        &quot;background_color&quot;: &quot;#ffffff&quot;,
+        &quot;theme_color&quot;: &quot;#007BFF&quot;,
+        &quot;description&quot;: &quot;Blood Test List Generator for Hospital Baling.&quot;,
+        &quot;icons&quot;: [
+            { &quot;src&quot;: &quot;./assets/experiment.png&quot;, &quot;sizes&quot;: &quot;192x192&quot;, &quot;type&quot;: &quot;image/png&quot; },
+            { &quot;src&quot;: &quot;./assets/experiment.png&quot;, &quot;sizes&quot;: &quot;512x512&quot;, &quot;type&quot;: &quot;image/png&quot; }
+        ]
+    }">
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -79,9 +99,13 @@
     <div id="main-page" class="container mx-auto p-4 md:p-8">
         <!-- Header -->
         <header class="flex justify-between items-center mb-6 pb-4 border-b border-gray-300">
-            <div>
-                <h1 class="text-xl md:text-2xl font-bold text-gray-700">Jabatan Patologi & Transfusi</h1>
-                <p class="text-md text-gray-600">Hospital Baling</p>
+            <div class="flex items-center space-x-3">
+                <!-- Replaced SVG with your image -->
+                <img src="./assets/experiment.png" alt="Logo" class="w-10 h-10">
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold text-gray-700">Jabatan Patologi & Transfusi</h1>
+                    <p class="text-md text-gray-600">Hospital Baling</p>
+                </div>
             </div>
             <div class="flex items-center space-x-2 no-print">
                 <button onclick="showRecordsPage()" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
@@ -139,7 +163,7 @@
                     <h2 class="text-xl font-bold text-center">SENARAI UJIAN DARAH</h2>
                     <div class="flex justify-between mt-2">
                         <div>
-                            <strong>Pusat Ujian:</strong> <span id="print-test-center"></span>
+                            <strong>Pusat:</strong> <span id="print-test-center"></span>
                         </div>
                         <div>
                             <strong>Tarikh Hantar:</strong> <span id="print-date"></span>
@@ -265,6 +289,49 @@
         let patientList = [];
         let allFetchedRecords = []; // Store all records for client-side filtering
         let currentlyDisplayedRecords = []; // Store currently visible records for printing
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            // Create and register the service worker from a string
+            const swCode = `
+                const CACHE_NAME = 'hb-records-cache-v2';
+                const urlsToCache = [
+                    '.', // Caches the root page
+                    './assets/experiment.png' // Cache the logo
+                ];
+
+                self.addEventListener('install', event => {
+                    event.waitUntil(
+                        caches.open(CACHE_NAME)
+                            .then(cache => {
+                                console.log('Opened cache');
+                                return cache.addAll(urlsToCache);
+                            })
+                    );
+                });
+
+                self.addEventListener('fetch', event => {
+                    event.respondWith(
+                        caches.match(event.request)
+                            .then(response => {
+                                if (response) {
+                                    return response;
+                                }
+                                return fetch(event.request);
+                            }
+                        )
+                    );
+                });
+            `;
+            const swBlob = new Blob([swCode], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(swBlob);
+            navigator.serviceWorker.register(swUrl).then(registration => {
+                console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            }, err => {
+                console.log('ServiceWorker registration failed: ', err);
+            });
+        }
+
 
         function showToast(message) {
             const toast = document.getElementById('toast');
@@ -493,7 +560,7 @@
 
             let printContent = `
                 <div class="p-8">
-                    <h2 class="text-xl font-bold text-center">HOSPITAL BALING:PERMOHONAN UJIAN DARAH</h2>
+                    <h2 class="text-xl font-bold text-center">SENARAI UJIAN DARAH</h2>
                     <div class="flex justify-between mt-2 mb-4">
                         <div>
                             <strong>Pusat:</strong> <span>${testCenter}</span>
@@ -608,3 +675,4 @@
     </script>
 </body>
 </html>
+
