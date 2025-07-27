@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blood Test List Generator - Hospital Baling</title>
+    <title>Senarai Permohonan Ujian Outsource Hospital Baling</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
 
     <!-- PWA & Favicon Configuration -->
     <meta name="theme-color" content="#ffffff">
-    <!-- Using your custom logo. Ensure 'assets/experiment.png' is in your project folder. -->
     <link rel="icon" href="./assets/experiment.png" type="image/png">
     <link rel="apple-touch-icon" href="./assets/experiment.png">
     <link rel="manifest" href="data:application/manifest+json,{
@@ -30,6 +29,12 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
+        }
+        #login-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
         .modal {
             display: none; /* Hidden by default */
@@ -96,156 +101,174 @@
 </head>
 <body class="bg-gray-100 text-gray-800">
 
-    <div id="main-page" class="container mx-auto p-4 md:p-8">
-        <!-- Header -->
-        <header class="flex justify-between items-center mb-6 pb-4 border-b border-gray-300">
-            <div class="flex items-center space-x-3">
-                <!-- Replaced SVG with your image -->
-                <img src="./assets/experiment.png" alt="Logo" class="w-10 h-10">
-                <div>
-                    <h1 class="text-xl md:text-2xl font-bold text-gray-700">Jabatan Patologi & Transfusi</h1>
-                    <p class="text-md text-gray-600">Hospital Baling</p>
-                </div>
-            </div>
-            <div class="flex items-center space-x-2 no-print">
-                <button onclick="showRecordsPage()" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
-                    <i class="fas fa-history mr-2"></i>View Records
-                </button>
-                <button onclick="clearList()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
-                    <i class="fas fa-plus mr-2"></i>New List
-                </button>
-            </div>
-        </header>
-
-        <main>
-            <!-- Controls -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-white p-4 rounded-lg shadow no-print">
-                <div class="md:col-span-2">
-                    <label for="test-center" class="block text-sm font-medium text-gray-700 mb-1">Test Center</label>
-                    <select id="test-center" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        <option>Hospital Tuanku Fauziah, Kangar</option>
-                        <option>Hospital Pulau Pinang</option>
-                        <option>Hospital Kuala Lumpur</option>
-                        <option>Makmal Kesihatan Awam Kebangsaan, Ipoh</option>
-                        <option>Makmal Kesihatan Awam Kebangsaan, Sungai Buloh </option>
-                        <option>Hospital Sungai Buloh</option>
-                        <option>Hospital Putrajaya</option>
-                        <option>Hospital Tunku Azizah, Kuala Lumpur</option>
-                        <option>Hospital Seberang Jaya</option>
-                        <option>Hospital Selayang</option>
-                        <option>Jabatan Kimia Malaysia, Pulau Pinang</option>
-                        <option>Institut Perubatan dan Pergigian Termaju, Bertam, Pulau Pinang</option>
-                        <option>Pusat Darah Negara</option>
-                    </select>
-                </div>
-                <div class="flex items-end">
-                    <button onclick="printAndSave()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
-                        <i class="fas fa-print mr-2"></i>Print & Save List
-                    </button>
-                </div>
-            </div>
-
-            <!-- Patient Input Form -->
-            <div class="bg-white p-6 rounded-lg shadow-md mb-8 no-print">
-                <h2 class="text-lg font-semibold mb-4 text-gray-800">Add New Patient</h2>
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                    <input type="text" id="patient-name" placeholder="Patient's Name" class="md:col-span-2 p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
-                    <input type="text" id="patient-id" placeholder="ID Number (IC/RN)" class="p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
-                    <input type="text" id="test-name" placeholder="Test Name (e.g., FBC, RP)" class="md:col-span-2 p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
-                    <button onclick="addPatient()" class="md:col-span-5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
-                        <i class="fas fa-user-plus mr-2"></i>Add Patient to List
-                    </button>
-                </div>
-            </div>
-
-            <!-- Test List Table -->
-            <div id="print-section" class="bg-white p-4 rounded-lg shadow-md">
-                 <div class="mb-4 hidden" id="print-header">
-                    <h2 class="text-xl font-bold text-center">SENARAI UJIAN DARAH</h2>
-                    <div class="flex justify-between mt-2">
-                        <div>
-                            <strong>Pusat:</strong> <span id="print-test-center"></span>
-                        </div>
-                        <div>
-                            <strong>Tarikh Hantar:</strong> <span id="print-date"></span>
-                        </div>
-                    </div>
-                </div>
-                <table class="w-full border-collapse">
-                    <thead>
-                        <tr class="bg-gray-200">
-                            <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">No.</th>
-                            <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Patient's Name</th>
-                            <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">ID Number</th>
-                            <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Test Name</th>
-                            <th class="p-3 text-center text-sm font-semibold text-gray-700 border border-gray-300 no-print">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="test-list">
-                        <!-- Patient rows will be inserted here -->
-                    </tbody>
-                </table>
-            </div>
-        </main>
-    </div>
-
-    <div id="records-page" class="container mx-auto p-4 md:p-8 hidden">
-        <!-- Header -->
-        <header class="flex justify-between items-center mb-6 pb-4 border-b border-gray-300">
-            <h1 class="text-xl md:text-2xl font-bold text-gray-700">All Records</h1>
-            <button onclick="showMainPage()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
-                <i class="fas fa-arrow-left mr-2"></i>Back to Main Page
+    <!-- Login Screen -->
+    <div id="login-screen">
+        <div class="text-center bg-white p-8 rounded-lg shadow-lg">
+            <img src="./assets/experiment.png" alt="Logo" class="w-16 h-16 mx-auto mb-4">
+            <h1 class="text-2xl font-bold mb-2">Rekod Spesimen</h1>
+            <p class="text-gray-600 mb-6">Sila daftar masuk akaun google untuk teruskan</p>
+            <button onclick="signInWithGoogle()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center mx-auto">
+                <i class="fab fa-google mr-2"></i>Daftar masuk dengan Google
             </button>
-        </header>
+            <p id="auth-error" class="text-red-500 mt-4 text-sm"></p>
+        </div>
+    </div>
 
-        <main>
-            <!-- Filter Controls -->
-            <div class="bg-white p-4 rounded-lg shadow-md mb-6 no-print">
-                <h2 class="text-lg font-semibold mb-2 text-gray-800">Filter Records</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                    <input type="text" id="filter-name" placeholder="Filter by Name..." class="p-2 border border-gray-300 rounded-md">
-                    <input type="text" id="filter-id" placeholder="Filter by ID..." class="p-2 border border-gray-300 rounded-md">
-                    <select id="filter-center" class="p-2 border border-gray-300 rounded-md"></select>
+    <!-- Main App Container (hidden by default) -->
+    <div id="app-container" class="hidden">
+        <div id="main-page" class="container mx-auto p-4 md:p-8">
+            <!-- Header -->
+            <header class="flex justify-between items-center mb-6 pb-4 border-b border-gray-300">
+                <div class="flex items-center space-x-3">
+                    <img src="./assets/experiment.png" alt="Logo" class="w-10 h-10">
                     <div>
-                        <label for="filter-date" class="text-sm text-gray-600">Filter by Date</label>
-                        <input type="date" id="filter-date" class="w-full p-2 border border-gray-300 rounded-md">
+                        <h1 class="text-xl md:text-2xl font-bold text-gray-700">Jabatan Patologi & Transfusi</h1>
+                        <p class="text-md text-gray-600">Hospital Baling</p>
                     </div>
                 </div>
-                <div class="mt-4 flex space-x-3">
-                    <button onclick="applyFilters()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Filter</button>
-                    <button onclick="clearFilters()" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Clear</button>
-                    <button onclick="printFiltered()" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg"><i class="fas fa-print mr-2"></i>Print Filtered</button>
+                <div class="flex items-center space-x-4 no-print">
+                    <div class="text-right">
+                        <p id="user-email" class="text-sm font-medium text-gray-700"></p>
+                        <button onclick="signOut()" class="text-xs text-blue-600 hover:underline">Daftar Keluar</button>
+                    </div>
+                    <button onclick="showRecordsPage()" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                        <i class="fas fa-history mr-2"></i>Lihat rekod
+                    </button>
+                    <button onclick="clearList()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                        <i class="fas fa-plus mr-2"></i>Mula Senarai Baru
+                    </button>
                 </div>
-            </div>
+            </header>
 
-            <div class="bg-white p-4 rounded-lg shadow-md">
-                <div id="records-loading" class="text-center p-8">
-                    <i class="fas fa-spinner fa-spin fa-3x text-blue-500"></i>
-                    <p class="mt-2 text-gray-600">Loading records...</p>
+            <main>
+                <!-- Controls -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-white p-4 rounded-lg shadow no-print">
+                    <div class="md:col-span-2">
+                        <label for="test-center" class="block text-sm font-medium text-gray-700 mb-1">Institusi Ujian</label>
+                        <select id="test-center" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <option>Hospital Tuanku Fauziah, Kangar</option>
+                            <option>Hospital Pulau Pinang</option>
+                            <option>Hospital Kuala Lumpur</option>
+                            <option>Makmal Kesihatan Awam Kebangsaan, Ipoh</option>
+                            <option>Makmal Kesihatan Awam Kebangsaan, Sungai Buloh </option>
+                            <option>Hospital Sungai Buloh</option>
+                            <option>Hospital Putrajaya</option>
+                            <option>Hospital Tunku Azizah, Kuala Lumpur</option>
+                            <option>Hospital Seberang Jaya</option>
+                            <option>Hospital Selayang</option>
+                            <option>Jabatan Kimia Pulau Pinang</option>
+                            <option>Institut Perubatan dan Pergigian Termaju, Bertam, Pulau Pinang</option>
+                            <option>Pusat Darah Negara</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="printAndSave()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                            <i class="fas fa-print mr-2"></i>Cetak & Simpan Senarai
+                        </button>
+                    </div>
                 </div>
-                <table class="w-full border-collapse hidden" id="records-table-container">
-                    <thead>
-                        <tr class="bg-gray-200">
-                            <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Patient's Name</th>
-                            <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">ID Number</th>
-                            <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Test Name</th>
-                            <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Test Center</th>
-                            <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Date Sent</th>
-                            <th class="p-3 text-center text-sm font-semibold text-gray-700 border border-gray-300 no-print">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="records-list">
-                        <!-- Records will be inserted here -->
-                    </tbody>
-                </table>
-            </div>
-        </main>
+
+                <!-- Patient Input Form -->
+                <div class="bg-white p-6 rounded-lg shadow-md mb-8 no-print">
+                    <h2 class="text-lg font-semibold mb-4 text-gray-800">Tambah Senarai Ujian</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <input type="text" id="patient-name" placeholder="Patient's Name" class="md:col-span-2 p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                        <input type="text" id="patient-id" placeholder="ID Number (IC/RN)" class="p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                        <input type="text" id="test-name" placeholder="Test Name (e.g., FBC, RP)" class="md:col-span-2 p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                        <button onclick="addPatient()" class="md:col-span-5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                            <i class="fas fa-user-plus mr-2"></i>Tambah Senarai
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Test List Table -->
+                <div id="print-section" class="bg-white p-4 rounded-lg shadow-md">
+                     <div class="mb-4 hidden" id="print-header">
+                        <h2 class="text-xl font-bold text-center">HOSPITAL BALING | PERMOHONAN UJIAN DARAH</h2>
+                        <div class="flex justify-between mt-2">
+                            <div>
+                                <strong>Institusi:</strong> <span id="print-test-center"></span>
+                            </div>
+                            <div>
+                                <strong>Tarikh Hantar:</strong> <span id="print-date"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">No.</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Patient's Name</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">ID Number</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Test Name</th>
+                                <th class="p-3 text-center text-sm font-semibold text-gray-700 border border-gray-300 no-print">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="test-list">
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+
+        <div id="records-page" class="container mx-auto p-4 md:p-8 hidden">
+            <!-- Header -->
+            <header class="flex justify-between items-center mb-6 pb-4 border-b border-gray-300">
+                <h1 class="text-xl md:text-2xl font-bold text-gray-700">Semua rekod</h1>
+                <button onclick="showMainPage()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                    <i class="fas fa-arrow-left mr-2"></i>Kembali
+                </button>
+            </header>
+
+            <main>
+                <!-- Filter Controls -->
+                <div class="bg-white p-4 rounded-lg shadow-md mb-6 no-print">
+                    <h2 class="text-lg font-semibold mb-2 text-gray-800">Tapis Rekod</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                        <input type="text" id="filter-name" placeholder="Filter by Name..." class="p-2 border border-gray-300 rounded-md">
+                        <input type="text" id="filter-id" placeholder="Filter by ID..." class="p-2 border border-gray-300 rounded-md">
+                        <select id="filter-center" class="p-2 border border-gray-300 rounded-md"></select>
+                        <div>
+                            <label for="filter-date" class="text-sm text-gray-600">Tapis Tarikh</label>
+                            <input type="date" id="filter-date" class="w-full p-2 border border-gray-300 rounded-md">
+                        </div>
+                    </div>
+                    <div class="mt-4 flex space-x-3">
+                        <button onclick="applyFilters()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Filter</button>
+                        <button onclick="clearFilters()" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Clear</button>
+                        <button onclick="printFiltered()" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg"><i class="fas fa-print mr-2"></i>Print Filtered</button>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <div id="records-loading" class="text-center p-8">
+                        <i class="fas fa-spinner fa-spin fa-3x text-blue-500"></i>
+                        <p class="mt-2 text-gray-600">Cari Rekod...</p>
+                    </div>
+                    <table class="w-full border-collapse hidden" id="records-table-container">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Nama Pesakit</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Nombor KP</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Nama Ujian</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Test Center</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Date Sent</th>
+                                <th class="p-3 text-center text-sm font-semibold text-gray-700 border border-gray-300 no-print">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="records-list">
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
     </div>
+
 
     <!-- Edit Modal -->
     <div id="edit-modal" class="modal">
         <div class="modal-content shadow-lg">
-            <h2 class="text-lg font-semibold mb-4">Edit Record</h2>
+            <h2 class="text-lg font-semibold mb-4">Kemaskini Rekod</h2>
             <input type="hidden" id="edit-doc-id">
             <div class="space-y-4">
                 <input type="text" id="edit-patient-name" placeholder="Patient's Name" class="w-full p-2 border border-gray-300 rounded-md">
@@ -267,6 +290,7 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
     <script>
         // ===============================================================
@@ -282,57 +306,78 @@
         };
         // ===============================================================
 
+        // ===============================================================
+        // ADD YOUR TEAM'S EMAILS HERE
+        // ===============================================================
+        const AUTHORIZED_EMAILS = [
+            "patologi_hbaling@moh.gov.my", 
+            "anonviranon@gmail.com"
+        ];
+        // ===============================================================
+
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        const auth = firebase.auth();
         const recordsCollection = db.collection("bloodTestRecords");
 
         let patientList = [];
         let allFetchedRecords = []; // Store all records for client-side filtering
         let currentlyDisplayedRecords = []; // Store currently visible records for printing
 
+        const loginScreen = document.getElementById('login-screen');
+        const appContainer = document.getElementById('app-container');
+        const authError = document.getElementById('auth-error');
+        const userEmailDisplay = document.getElementById('user-email');
+
+        // --- Authentication Logic ---
+        auth.onAuthStateChanged(user => {
+            if (user && AUTHORIZED_EMAILS.includes(user.email)) {
+                // User is signed in and authorized
+                loginScreen.style.display = 'none';
+                appContainer.classList.remove('hidden');
+                userEmailDisplay.textContent = user.email;
+                renderTable(); // Initial render for main page
+            } else {
+                // User is not signed in or not authorized
+                loginScreen.style.display = 'flex';
+                appContainer.classList.add('hidden');
+                if (user) { // If user is logged in but not authorized
+                    authError.textContent = 'Access denied. Please use an authorized account.';
+                    signOut(); // Sign them out
+                }
+            }
+        });
+
+        function signInWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .catch(error => {
+                    console.error("Google Sign-In Error:", error);
+                    authError.textContent = `Error: ${error.message}`;
+                });
+        }
+
+        function signOut() {
+            auth.signOut();
+        }
+
         // PWA Service Worker Registration
         if ('serviceWorker' in navigator) {
-            // Create and register the service worker from a string
             const swCode = `
                 const CACHE_NAME = 'hb-records-cache-v2';
-                const urlsToCache = [
-                    '.', // Caches the root page
-                    './assets/experiment.png' // Cache the logo
-                ];
-
+                const urlsToCache = [ '.', './assets/experiment.png' ];
                 self.addEventListener('install', event => {
-                    event.waitUntil(
-                        caches.open(CACHE_NAME)
-                            .then(cache => {
-                                console.log('Opened cache');
-                                return cache.addAll(urlsToCache);
-                            })
-                    );
+                    event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
                 });
-
                 self.addEventListener('fetch', event => {
-                    event.respondWith(
-                        caches.match(event.request)
-                            .then(response => {
-                                if (response) {
-                                    return response;
-                                }
-                                return fetch(event.request);
-                            }
-                        )
-                    );
+                    event.respondWith(caches.match(event.request).then(response => response || fetch(event.request)));
                 });
             `;
             const swBlob = new Blob([swCode], { type: 'application/javascript' });
             const swUrl = URL.createObjectURL(swBlob);
-            navigator.serviceWorker.register(swUrl).then(registration => {
-                console.log('ServiceWorker registration successful with scope: ', registration.scope);
-            }, err => {
-                console.log('ServiceWorker registration failed: ', err);
-            });
+            navigator.serviceWorker.register(swUrl);
         }
-
 
         function showToast(message) {
             const toast = document.getElementById('toast');
@@ -561,10 +606,10 @@
 
             let printContent = `
                 <div class="p-8">
-                    <h2 class="text-xl font-bold text-center">SENARAI UJIAN DARAH</h2>
+                    <h2 class="text-xl font-bold text-center">HOSPITAL BALING|PERMOHONAN UJIAN DARAH</h2>
                     <div class="flex justify-between mt-2 mb-4">
                         <div>
-                            <strong>Pusat:</strong> <span>${testCenter}</span>
+                            <strong>Institusi:</strong> <span>${testCenter}</span>
                         </div>
                         <div>
                             <strong>Tarikh Cetak:</strong> <span>${printDate}</span>
@@ -670,10 +715,6 @@
             }
         }
         
-        // Initial render
-        renderTable();
-
     </script>
 </body>
 </html>
-
