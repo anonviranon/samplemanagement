@@ -124,10 +124,10 @@
     <div id="login-screen">
         <div class="text-center bg-white p-8 rounded-lg shadow-lg">
             <img src="./assets/experiment.png" alt="Logo" class="w-16 h-16 mx-auto mb-4">
-            <h1 class="text-2xl font-bold mb-2">Rekod Spesimen</h1>
-            <p class="text-gray-600 mb-6">Sila daftar masuk akaun google untuk teruskan</p>
+            <h1 class="text-2xl font-bold mb-2">Pengurusan Spesimen Outsource</h1>
+            <p class="text-gray-600 mb-6">Sila log masuk dengan Google.</p>
             <button id="login-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center mx-auto">
-                <i class="fab fa-google mr-2"></i>Daftar masuk dengan Google
+                <i class="fab fa-google mr-2"></i>Log Masuk Google
             </button>
             <p id="auth-error" class="text-red-500 mt-4 text-sm"></p>
         </div>
@@ -151,7 +151,7 @@
                         <button id="logout-button" class="text-xs text-blue-600 hover:underline">Daftar Keluar</button>
                     </div>
                     <button id="show-records-button" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
-                        <i class="fas fa-history mr-2"></i>Lihat rekod
+                        <i class="fas fa-history mr-2"></i>Lihat Rekod
                     </button>
                     <button id="clear-list-button" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
                         <i class="fas fa-plus mr-2"></i>Mula Senarai Baru
@@ -183,25 +183,25 @@
                     </div>
                     <div class="flex items-end">
                         <button id="print-save-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
-                            <i class="fas fa-print mr-2"></i>Cetak & Simpan Senarai
+                            <i class="fas fa-print mr-2"></i>Cetak & Simpan
                         </button>
                     </div>
                 </div>
 
                 <!-- Patient Input Form -->
                 <div class="bg-white p-6 rounded-lg shadow-md mb-8 no-print">
-                    <h2 class="text-lg font-semibold mb-4 text-gray-800">Tambah Senarai Ujian</h2>
+                    <h2 class="text-lg font-semibold mb-4 text-gray-800">Tambah Ujian</h2>
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div class="md:col-span-2 relative">
                             <input type="text" id="patient-name" placeholder="Nama Pesakit" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" autocomplete="off">
                             <div id="patient-name-suggestions" class="autocomplete-suggestions hidden"></div>
                         </div>
                          <div class="relative">
-                            <input type="text" id="patient-id" placeholder="Kad Pengenalan (IC/RN)" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" autocomplete="off">
+                            <input type="text" id="patient-id" placeholder="No. KP / RN" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" autocomplete="off">
                             <div id="patient-id-suggestions" class="autocomplete-suggestions hidden"></div>
                         </div>
                         <div class="md:col-span-2 relative">
-                            <input type="text" id="test-name" placeholder="Ujian (e.g., ANA, METANEPHRINE)" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" autocomplete="off">
+                            <input type="text" id="test-name" placeholder="Nama Ujian (cth: FBC, RP)" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" autocomplete="off">
                             <div id="test-name-suggestions" class="autocomplete-suggestions hidden"></div>
                         </div>
                         <button id="add-patient-button" class="md:col-span-5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
@@ -228,7 +228,7 @@
                             <tr class="bg-gray-200">
                                 <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">No.</th>
                                 <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Nama Pesakit</th>
-                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Kad Pengenalan</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">No. KP / RN</th>
                                 <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Nama Ujian</th>
                                 <th class="p-3 text-center text-sm font-semibold text-gray-700 border border-gray-300 no-print">Tindakan</th>
                             </tr>
@@ -243,7 +243,7 @@
         <div id="records-page" class="container mx-auto p-4 md:p-8 hidden">
             <!-- Header -->
             <header class="flex justify-between items-center mb-6 pb-4 border-b border-gray-300">
-                <h1 class="text-xl md:text-2xl font-bold text-gray-700">Semua rekod</h1>
+                <h1 class="text-xl md:text-2xl font-bold text-gray-700">Semua Rekod</h1>
                 <button id="back-to-main-button" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
                     <i class="fas fa-arrow-left mr-2"></i>Kembali
                 </button>
@@ -254,8 +254,8 @@
                 <div class="bg-white p-4 rounded-lg shadow-md mb-6 no-print">
                     <h2 class="text-lg font-semibold mb-2 text-gray-800">Tapis Rekod</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                        <input type="text" id="filter-name" placeholder="Filter by Name..." class="p-2 border border-gray-300 rounded-md">
-                        <input type="text" id="filter-id" placeholder="Filter by ID..." class="p-2 border border-gray-300 rounded-md">
+                        <input type="text" id="filter-name" placeholder="Tapis Nama..." class="p-2 border border-gray-300 rounded-md">
+                        <input type="text" id="filter-id" placeholder="Tapis No. KP..." class="p-2 border border-gray-300 rounded-md">
                         <select id="filter-center" class="p-2 border border-gray-300 rounded-md"></select>
                         <div>
                             <label for="filter-date" class="text-sm text-gray-600">Tapis Tarikh</label>
@@ -263,16 +263,16 @@
                         </div>
                     </div>
                     <div class="mt-4 flex space-x-3">
-                        <button id="apply-filters-button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Filter</button>
-                        <button id="clear-filters-button" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Clear</button>
-                        <button id="print-filtered-button" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg"><i class="fas fa-print mr-2"></i>Print Filtered</button>
+                        <button id="apply-filters-button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Tapis</button>
+                        <button id="clear-filters-button" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Kosongkan</button>
+                        <button id="print-filtered-button" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg"><i class="fas fa-print mr-2"></i>Cetak (Tapis)</button>
                     </div>
                 </div>
 
                 <div class="bg-white p-4 rounded-lg shadow-md">
                     <div id="records-loading" class="text-center p-8">
                         <i class="fas fa-spinner fa-spin fa-3x text-blue-500"></i>
-                        <p class="mt-2 text-gray-600">Cari Rekod...</p>
+                        <p class="mt-2 text-gray-600">Memuatkan Rekod...</p>
                     </div>
                     <table class="w-full border-collapse hidden" id="records-table-container">
                         <thead>
@@ -280,8 +280,8 @@
                                 <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Nama Pesakit</th>
                                 <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Nombor KP</th>
                                 <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Nama Ujian</th>
-                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Institusi Ujian</th>
-                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Tarikh hantar</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Pusat Ujian</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Tarikh Hantar</th>
                                 <th class="p-3 text-center text-sm font-semibold text-gray-700 border border-gray-300 no-print">Tindakan</th>
                             </tr>
                         </thead>
@@ -301,12 +301,12 @@
             <input type="hidden" id="local-edit-index">
             <div class="space-y-4">
                 <input type="text" id="local-edit-patient-name" placeholder="Nama Pesakit" class="w-full p-2 border border-gray-300 rounded-md">
-                <input type="text" id="local-edit-patient-id" placeholder="Kad Pengenalan" class="w-full p-2 border border-gray-300 rounded-md">
-                <input type="text" id="local-edit-test-name" placeholder="Ujian" class="w-full p-2 border border-gray-300 rounded-md">
+                <input type="text" id="local-edit-patient-id" placeholder="No. KP / RN" class="w-full p-2 border border-gray-300 rounded-md">
+                <input type="text" id="local-edit-test-name" placeholder="Nama Ujian" class="w-full p-2 border border-gray-300 rounded-md">
             </div>
             <div class="mt-6 flex justify-end space-x-3">
-                <button id="local-edit-modal-cancel" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">Cancel</button>
-                <button id="local-edit-modal-save" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Save Changes</button>
+                <button id="local-edit-modal-cancel" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">Batal</button>
+                <button id="local-edit-modal-save" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Simpan</button>
             </div>
         </div>
     </div>
@@ -318,14 +318,14 @@
             <input type="hidden" id="edit-doc-id">
             <div class="space-y-4">
                 <input type="text" id="edit-patient-name" placeholder="Nama Pesakit" class="w-full p-2 border border-gray-300 rounded-md">
-                <input type="text" id="edit-patient-id" placeholder="Kad Pengenalan" class="w-full p-2 border border-gray-300 rounded-md">
-                <input type="text" id="edit-test-name" placeholder="Ujian" class="w-full p-2 border border-gray-300 rounded-md">
-                <input type="text" id="edit-test-center" placeholder="Institusi Ujian" class="w-full p-2 border border-gray-300 rounded-md">
+                <input type="text" id="edit-patient-id" placeholder="No. KP / RN" class="w-full p-2 border border-gray-300 rounded-md">
+                <input type="text" id="edit-test-name" placeholder="Nama Ujian" class="w-full p-2 border border-gray-300 rounded-md">
+                <input type="text" id="edit-test-center" placeholder="Pusat Ujian" class="w-full p-2 border border-gray-300 rounded-md">
                 <input type="date" id="edit-date-sent" class="w-full p-2 border border-gray-300 rounded-md">
             </div>
             <div class="mt-6 flex justify-end space-x-3">
-                <button id="edit-modal-cancel" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">Cancel</button>
-                <button id="edit-modal-save" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Save Changes</button>
+                <button id="edit-modal-cancel" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">Batal</button>
+                <button id="edit-modal-save" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Simpan</button>
             </div>
         </div>
     </div>
@@ -409,7 +409,7 @@
                 loginScreen.style.display = 'flex';
                 appContainer.classList.add('hidden');
                 if (user) { // If user is logged in but not authorized
-                    authError.textContent = 'Access denied. Please use an authorized account.';
+                    authError.textContent = 'Akses ditolak. Guna akaun yang dibenarkan.';
                     signOut(auth); // Sign them out
                 }
             }
@@ -464,7 +464,7 @@
                 document.getElementById('test-name').value = '';
                 document.getElementById('patient-name').focus();
             } else {
-                showToast('Please fill in all patient details.', true);
+                showToast('Sila isi semua maklumat pesakit.', true);
             }
         }
 
@@ -472,7 +472,7 @@
             const tableBody = document.getElementById('test-list');
             tableBody.innerHTML = '';
             if (patientList.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="text-center p-4 text-gray-500">No patients added to the current list.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="5" class="text-center p-4 text-gray-500">Tiada pesakit dalam senarai.</td></tr>`;
                 return;
             }
             patientList.forEach((patient, index) => {
@@ -504,16 +504,16 @@
         }
 
         function clearList() {
-            showConfirm('Padam senarai?', () => {
+            showConfirm('Anda pasti untuk mulakan senarai baru? Senarai semasa akan dipadam.', () => {
                 patientList = [];
                 renderTable();
-                showToast('New list started.');
+                showToast('Senarai baru dimulakan.');
             });
         }
 
         async function printAndSave() {
             if (patientList.length === 0) {
-                showToast("Senarai kosong.", true);
+                showToast("Senarai kosong. Sila tambah pesakit.", true);
                 return;
             }
 
@@ -552,7 +552,7 @@
             // --- Execution Logic ---
             const executeSave = async (records) => {
                 if (records.length === 0) {
-                    showToast("Rekod telah wujud.", true);
+                    showToast("Tiada rekod baru. Semua adalah salinan.", true);
                     return;
                 }
 
@@ -573,7 +573,7 @@
                     await batch.commit();
                     let successMessage = `${records.length} rekod baru disimpan.`;
                     if (duplicateRecords.length > 0) {
-                        successMessage += ` ${duplicateRecords.length} rekod yg telah wujud tidak disimpan.`;
+                        successMessage += ` ${duplicateRecords.length} salinan diabaikan.`;
                     }
                     showToast(successMessage);
                     
@@ -583,7 +583,7 @@
                     await fetchRecords();
                 } catch (error) {
                     console.error("Error saving data to Firebase: ", error);
-                    showToast("An error occurred while saving the data.", true);
+                    showToast("Gagal menyimpan data.", true);
                 }
             };
 
@@ -595,12 +595,12 @@
             document.getElementById('print-header').classList.add('hidden');
 
             if (duplicateRecords.length > 0) {
-                let confirmMessage = `${duplicateRecords.length} of ${patientList.length} record(s) seem to be duplicates of existing entries for today. `;
+                let confirmMessage = `${duplicateRecords.length} dari ${patientList.length} rekod adalah salinan untuk hari ini. `;
                 if (recordsToSave.length > 0) {
-                    confirmMessage += `Do you want to proceed and save only the ${recordsToSave.length} new record(s)?`;
+                    confirmMessage += `Teruskan untuk simpan ${recordsToSave.length} rekod baru sahaja?`;
                     showConfirm(confirmMessage, () => executeSave(recordsToSave));
                 } else {
-                    confirmMessage += `No new records will be saved.`;
+                    confirmMessage += `Tiada rekod baru akan disimpan.`;
                     showToast(confirmMessage, true);
                 }
             } else {
@@ -617,9 +617,6 @@
         function showRecordsPage() {
             mainPage.classList.add('hidden');
             recordsPage.classList.remove('hidden');
-            // Always fetch when showing the page to ensure data is fresh
-            // and to handle cases where the initial fetch might have failed.
-            // The fetchRecords function itself will show a loading indicator.
             fetchRecords();
         }
 
@@ -648,7 +645,7 @@
             } catch (error) {
                 console.error("Error fetching records: ", error);
                 if (isOnRecordsPage) {
-                    document.getElementById('records-list').innerHTML = `<tr><td colspan="6" class="text-center p-4">Failed to load records. Error: ${error.message}</td></tr>`;
+                    document.getElementById('records-list').innerHTML = `<tr><td colspan="6" class="text-center p-4">Gagal memuatkan rekod. Ralat: ${error.message}</td></tr>`;
                 }
             } finally {
                 if(isOnRecordsPage) {
@@ -664,7 +661,7 @@
             recordsListBody.innerHTML = '';
 
             if (records.length === 0) {
-                recordsListBody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-gray-500">No records match the current filter.</td></tr>';
+                recordsListBody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-gray-500">Tiada rekod ditemui.</td></tr>';
                 return;
             }
 
@@ -697,7 +694,7 @@
         function populateFilterOptions() {
             const centers = [...new Set(allFetchedRecords.map(record => record.testCenter))];
             const select = document.getElementById('filter-center');
-            select.innerHTML = '<option value="">All Centers</option>';
+            select.innerHTML = '<option value="">Semua Pusat</option>';
             centers.sort().forEach(center => {
                 select.innerHTML += `<option value="${center}">${center}</option>`;
             });
@@ -739,13 +736,13 @@
 
         function printFiltered() {
             if (currentlyDisplayedRecords.length === 0) {
-                showToast("There are no records to print.", true);
+                showToast("Tiada rekod untuk dicetak.", true);
                 return;
             }
 
             const printArea = document.getElementById('filtered-print-section');
             const centerFilterValue = document.getElementById('filter-center').value;
-            const testCenter = centerFilterValue || "All Centers";
+            const testCenter = centerFilterValue || "Semua Pusat";
             const printDate = new Date().toLocaleDateString('en-GB');
 
             let printContent = `
@@ -759,10 +756,10 @@
                         <thead>
                             <tr class="bg-gray-200">
                                 <th class="p-2 text-left text-sm font-semibold text-gray-700 border border-gray-400">Nama Pesakit</th>
-                                <th class="p-2 text-left text-sm font-semibold text-gray-700 border border-gray-400">Kad Pengenalan</th>
-                                <th class="p-2 text-left text-sm font-semibold text-gray-700 border border-gray-400">Ujian</th>
-                                <th class="p-2 text-left text-sm font-semibold text-gray-700 border border-gray-400">Insitut Ujian</th>
-                                <th class="p-2 text-left text-sm font-semibold text-gray-700 border border-gray-400">Tarikh hantar</th>
+                                <th class="p-2 text-left text-sm font-semibold text-gray-700 border border-gray-400">No. KP / RN</th>
+                                <th class="p-2 text-left text-sm font-semibold text-gray-700 border border-gray-400">Nama Ujian</th>
+                                <th class="p-2 text-left text-sm font-semibold text-gray-700 border border-gray-400">Pusat Ujian</th>
+                                <th class="p-2 text-left text-sm font-semibold text-gray-700 border border-gray-400">Tarikh Hantar</th>
                             </tr>
                         </thead>
                         <tbody>`;
@@ -788,14 +785,14 @@
         }
 
         function deleteRecord(docId) {
-            showConfirm('Padam rekod?', async () => {
+            showConfirm('Anda pasti untuk padam rekod ini?', async () => {
                 try {
                     await deleteDoc(doc(db, "bloodTestRecords", docId));
-                    showToast('Rekod telah dipadam.');
+                    showToast('Rekod berjaya dipadam.');
                     fetchRecords(); // Refresh the entire list
                 } catch (error) {
                     console.error("Error deleting record: ", error);
-                    showToast("Failed to delete record.", true);
+                    showToast("Gagal memadam rekod.", true);
                 }
             });
         }
@@ -861,9 +858,9 @@
                 patientList[index] = { name: newName, id: newId, test: newTest };
                 renderTable();
                 closeLocalEditModal();
-                showToast('List item updated.');
+                showToast('Item senarai dikemaskini.');
             } else {
-                showToast('Please fill all fields.', true);
+                showToast('Sila isi semua ruangan.', true);
             }
         }
 
@@ -900,12 +897,12 @@
 
             try {
                 await updateDoc(doc(db, "bloodTestRecords", docId), updatedRecord);
-                showToast('Record updated successfully!');
+                showToast('Rekod berjaya dikemaskini!');
                 closeModal();
                 fetchRecords(); // Refresh the list to show changes
             } catch (error) {
                 console.error('Error updating record:', error);
-                showToast('An error occurred while updating the record.', true);
+                showToast('Gagal mengemaskini rekod.', true);
             }
         }
 
@@ -971,4 +968,3 @@
     </script>
 </body>
 </html>
-
