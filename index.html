@@ -288,6 +288,7 @@
                         <tbody id="records-list">
                         </tbody>
                     </table>
+                    <div id="pagination-controls" class="mt-4 flex justify-center items-center space-x-2 no-print"></div>
                 </div>
             </main>
         </div>
@@ -384,6 +385,8 @@
         let patientList = [];
         let allFetchedRecords = []; // Store all records for client-side filtering and suggestions
         let currentlyDisplayedRecords = []; // Store currently visible records for printing
+        let currentPage = 1;
+        const recordsPerPage = 20;
 
         // --- DOM Elements ---
         const loginScreen = document.getElementById('login-screen');
@@ -617,6 +620,7 @@
         function showRecordsPage() {
             mainPage.classList.add('hidden');
             recordsPage.classList.remove('hidden');
+            currentPage = 1;
             fetchRecords();
         }
 
@@ -656,39 +660,105 @@
         }
 
         function renderRecordsTable(records) {
-            currentlyDisplayedRecords = records; // Store for printing
+            currentlyDisplayedRecords = records;
             const recordsListBody = document.getElementById('records-list');
             recordsListBody.innerHTML = '';
 
-            if (records.length === 0) {
-                recordsListBody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-gray-500">Tiada rekod ditemui.</td></tr>';
+            const startIndex = (currentPage - 1) * recordsPerPage;
+            const endIndex = startIndex + recordsPerPage;
+            const paginatedRecords = records.slice(startIndex, endIndex);
+
+            if (paginatedRecords.length === 0 && records.length > 0) {
+                // If on a page with no records (e.g., after deleting last item on a page)
+                currentPage = Math.max(1, currentPage - 1);
+                renderRecordsTable(records); // Re-render with the new page
                 return;
             }
+            
+            if (records.length === 0) {
+                recordsListBody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-gray-500">Tiada rekod ditemui.</td></tr>';
+            } else {
+                paginatedRecords.forEach(record => {
+                    const date = record.dateSent.toDate().toLocaleDateString('en-GB');
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+                    row.id = `row-${record.id}`;
+                    row.innerHTML = `
+                        <td class="p-3 border border-gray-300" data-field="patientName">${record.patientName}</td>
+                        <td class="p-3 border border-gray-300" data-field="patientId">${record.patientId}</td>
+                        <td class="p-3 border border-gray-300" data-field="testName">${record.testName}</td>
+                        <td class="p-3 border border-gray-300" data-field="testCenter">${record.testCenter}</td>
+                        <td class="p-3 border border-gray-300" data-field="dateSent">${date}</td>
+                        <td class="p-3 border border-gray-300 text-center space-x-3 no-print">
+                            <button class="edit-btn text-blue-500 hover:text-blue-700">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-btn text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    `;
+                    row.querySelector('.edit-btn').addEventListener('click', () => openEditModal(record.id));
+                    row.querySelector('.delete-btn').addEventListener('click', () => deleteRecord(record.id));
+                    recordsListBody.appendChild(row);
+                });
+            }
+            renderPaginationControls(records.length);
+        }
 
-            records.forEach(record => {
-                const date = record.dateSent.toDate().toLocaleDateString('en-GB');
-                const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50';
-                row.id = `row-${record.id}`;
-                row.innerHTML = `
-                    <td class="p-3 border border-gray-300" data-field="patientName">${record.patientName}</td>
-                    <td class="p-3 border border-gray-300" data-field="patientId">${record.patientId}</td>
-                    <td class="p-3 border border-gray-300" data-field="testName">${record.testName}</td>
-                    <td class="p-3 border border-gray-300" data-field="testCenter">${record.testCenter}</td>
-                    <td class="p-3 border border-gray-300" data-field="dateSent">${date}</td>
-                    <td class="p-3 border border-gray-300 text-center space-x-3 no-print">
-                        <button class="edit-btn text-blue-500 hover:text-blue-700">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="delete-btn text-red-500 hover:text-red-700">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </td>
-                `;
-                row.querySelector('.edit-btn').addEventListener('click', () => openEditModal(record.id));
-                row.querySelector('.delete-btn').addEventListener('click', () => deleteRecord(record.id));
-                recordsListBody.appendChild(row);
+        function renderPaginationControls(totalRecords) {
+            const paginationControls = document.getElementById('pagination-controls');
+            paginationControls.innerHTML = '';
+            const totalPages = Math.ceil(totalRecords / recordsPerPage);
+
+            if (totalPages <= 1) return;
+
+            // Previous Button
+            const prevButton = document.createElement('button');
+            prevButton.innerHTML = '&laquo;';
+            prevButton.className = 'px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50';
+            if (currentPage === 1) {
+                prevButton.disabled = true;
+                prevButton.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+            prevButton.addEventListener('click', () => {
+                goToPage(currentPage - 1);
             });
+            paginationControls.appendChild(prevButton);
+
+            // Page Numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.className = 'px-3 py-1 rounded-md border border-gray-300';
+                if (i === currentPage) {
+                    pageButton.className += ' bg-blue-500 text-white border-blue-500';
+                } else {
+                    pageButton.className += ' bg-white text-gray-700 hover:bg-gray-50';
+                }
+                pageButton.addEventListener('click', () => {
+                    goToPage(i);
+                });
+                paginationControls.appendChild(pageButton);
+            }
+
+            // Next Button
+            const nextButton = document.createElement('button');
+            nextButton.innerHTML = '&raquo;';
+            nextButton.className = 'px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50';
+            if (currentPage === totalPages) {
+                nextButton.disabled = true;
+                nextButton.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+            nextButton.addEventListener('click', () => {
+                goToPage(currentPage + 1);
+            });
+            paginationControls.appendChild(nextButton);
+        }
+        
+        function goToPage(pageNumber) {
+            currentPage = pageNumber;
+            renderRecordsTable(currentlyDisplayedRecords);
         }
 
         function populateFilterOptions() {
@@ -701,6 +771,7 @@
         }
 
         function applyFilters() {
+            currentPage = 1;
             const nameFilter = document.getElementById('filter-name').value.toLowerCase();
             const idFilter = document.getElementById('filter-id').value.toLowerCase();
             const centerFilter = document.getElementById('filter-center').value;
@@ -727,6 +798,7 @@
         }
 
         function clearFilters() {
+            currentPage = 1;
             document.getElementById('filter-name').value = '';
             document.getElementById('filter-id').value = '';
             document.getElementById('filter-center').value = '';
@@ -789,7 +861,9 @@
                 try {
                     await deleteDoc(doc(db, "bloodTestRecords", docId));
                     showToast('Rekod berjaya dipadam.');
-                    fetchRecords(); // Refresh the entire list
+                    await fetchRecords(); // Refresh the entire list
+                    // After fetching, re-render the current view (which is the records page)
+                    applyFilters(); // Re-apply filters to show the correct paginated view
                 } catch (error) {
                     console.error("Error deleting record: ", error);
                     showToast("Gagal memadam rekod.", true);
