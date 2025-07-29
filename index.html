@@ -227,10 +227,10 @@
                         <thead>
                             <tr class="bg-gray-200">
                                 <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">No.</th>
-                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Patient's Name</th>
-                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">ID Number</th>
-                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Test Name</th>
-                                <th class="p-3 text-center text-sm font-semibold text-gray-700 border border-gray-300 no-print">Actions</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Nama Pesakit</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Kad Pengenalan</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Nama Ujian</th>
+                                <th class="p-3 text-center text-sm font-semibold text-gray-700 border border-gray-300 no-print">Tindakan</th>
                             </tr>
                         </thead>
                         <tbody id="test-list">
@@ -280,9 +280,9 @@
                                 <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Nama Pesakit</th>
                                 <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Nombor KP</th>
                                 <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Nama Ujian</th>
-                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Test Center</th>
-                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Date Sent</th>
-                                <th class="p-3 text-center text-sm font-semibold text-gray-700 border border-gray-300 no-print">Actions</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Institusi Ujian</th>
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700 border border-gray-300">Tarikh hantar</th>
+                                <th class="p-3 text-center text-sm font-semibold text-gray-700 border border-gray-300 no-print">Tindakan</th>
                             </tr>
                         </thead>
                         <tbody id="records-list">
@@ -300,9 +300,9 @@
             <h2 class="text-lg font-semibold mb-4">Edit Senarai Semasa</h2>
             <input type="hidden" id="local-edit-index">
             <div class="space-y-4">
-                <input type="text" id="local-edit-patient-name" placeholder="Patient's Name" class="w-full p-2 border border-gray-300 rounded-md">
-                <input type="text" id="local-edit-patient-id" placeholder="ID Number" class="w-full p-2 border border-gray-300 rounded-md">
-                <input type="text" id="local-edit-test-name" placeholder="Test Name" class="w-full p-2 border border-gray-300 rounded-md">
+                <input type="text" id="local-edit-patient-name" placeholder="Nama Pesakit" class="w-full p-2 border border-gray-300 rounded-md">
+                <input type="text" id="local-edit-patient-id" placeholder="Kad Pengenalan" class="w-full p-2 border border-gray-300 rounded-md">
+                <input type="text" id="local-edit-test-name" placeholder="Ujian" class="w-full p-2 border border-gray-300 rounded-md">
             </div>
             <div class="mt-6 flex justify-end space-x-3">
                 <button id="local-edit-modal-cancel" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">Cancel</button>
@@ -317,10 +317,10 @@
             <h2 class="text-lg font-semibold mb-4">Kemaskini Rekod</h2>
             <input type="hidden" id="edit-doc-id">
             <div class="space-y-4">
-                <input type="text" id="edit-patient-name" placeholder="Patient's Name" class="w-full p-2 border border-gray-300 rounded-md">
-                <input type="text" id="edit-patient-id" placeholder="ID Number" class="w-full p-2 border border-gray-300 rounded-md">
-                <input type="text" id="edit-test-name" placeholder="Test Name" class="w-full p-2 border border-gray-300 rounded-md">
-                <input type="text" id="edit-test-center" placeholder="Test Center" class="w-full p-2 border border-gray-300 rounded-md">
+                <input type="text" id="edit-patient-name" placeholder="Nama Pesakit" class="w-full p-2 border border-gray-300 rounded-md">
+                <input type="text" id="edit-patient-id" placeholder="Kad Pengenalan" class="w-full p-2 border border-gray-300 rounded-md">
+                <input type="text" id="edit-test-name" placeholder="Ujian" class="w-full p-2 border border-gray-300 rounded-md">
+                <input type="text" id="edit-test-center" placeholder="Institusi Ujian" class="w-full p-2 border border-gray-300 rounded-md">
                 <input type="date" id="edit-date-sent" class="w-full p-2 border border-gray-300 rounded-md">
             </div>
             <div class="mt-6 flex justify-end space-x-3">
@@ -571,9 +571,9 @@
 
                 try {
                     await batch.commit();
-                    let successMessage = `${records.length} new record(s) saved successfully.`;
+                    let successMessage = `${records.length} rekod baru disimpan.`;
                     if (duplicateRecords.length > 0) {
-                        successMessage += ` ${duplicateRecords.length} duplicate(s) were ignored.`;
+                        successMessage += ` ${duplicateRecords.length} rekod yg telah wujud tidak disimpan.`;
                     }
                     showToast(successMessage);
                     
@@ -758,11 +758,11 @@
                     <table class="w-full border-collapse" style="font-size: 10pt;">
                         <thead>
                             <tr class="bg-gray-200">
-                                <th class="p-2 text-left text-sm font-semibold text-gray-700 border border-gray-400">Patient's Name</th>
-                                <th class="p-2 text-left text-sm font-semibold text-gray-700 border border-gray-400">ID Number</th>
-                                <th class="p-2 text-left text-sm font-semibold text-gray-700 border border-gray-400">Test Name</th>
-                                <th class="p-2 text-left text-sm font-semibold text-gray-700 border border-gray-400">Test Center</th>
-                                <th class="p-2 text-left text-sm font-semibold text-gray-700 border border-gray-400">Date Sent</th>
+                                <th class="p-2 text-left text-sm font-semibold text-gray-700 border border-gray-400">Nama Pesakit</th>
+                                <th class="p-2 text-left text-sm font-semibold text-gray-700 border border-gray-400">Kad Pengenalan</th>
+                                <th class="p-2 text-left text-sm font-semibold text-gray-700 border border-gray-400">Ujian</th>
+                                <th class="p-2 text-left text-sm font-semibold text-gray-700 border border-gray-400">Insitut Ujian</th>
+                                <th class="p-2 text-left text-sm font-semibold text-gray-700 border border-gray-400">Tarikh hantar</th>
                             </tr>
                         </thead>
                         <tbody>`;
