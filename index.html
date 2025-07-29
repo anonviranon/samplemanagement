@@ -504,7 +504,7 @@
         }
 
         function clearList() {
-            showConfirm('Are you sure you want to start a new list? The current list will be cleared.', () => {
+            showConfirm('Padam senarai?', () => {
                 patientList = [];
                 renderTable();
                 showToast('New list started.');
@@ -513,7 +513,7 @@
 
         async function printAndSave() {
             if (patientList.length === 0) {
-                showToast("The list is empty. Please add patients before printing.", true);
+                showToast("Senarai kosong.", true);
                 return;
             }
 
@@ -552,7 +552,7 @@
             // --- Execution Logic ---
             const executeSave = async (records) => {
                 if (records.length === 0) {
-                    showToast("No new records to save. All entries were duplicates.", true);
+                    showToast("Rekod telah wujud.", true);
                     return;
                 }
 
@@ -788,10 +788,10 @@
         }
 
         function deleteRecord(docId) {
-            showConfirm('Are you sure you want to permanently delete this record?', async () => {
+            showConfirm('Padam rekod?', async () => {
                 try {
                     await deleteDoc(doc(db, "bloodTestRecords", docId));
-                    showToast('Record deleted successfully.');
+                    showToast('Rekod telah dipadam.');
                     fetchRecords(); // Refresh the entire list
                 } catch (error) {
                     console.error("Error deleting record: ", error);
