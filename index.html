@@ -872,30 +872,43 @@
         }
 
         // --- Autocomplete Logic ---
-        function setupAutocomplete(inputId, suggestionBoxId, fieldName) {
+        function setupAutocomplete(inputId, suggestionBoxId, fieldName, onSelectCallback) {
             const input = document.getElementById(inputId);
             const suggestionBox = document.getElementById(suggestionBoxId);
 
             input.addEventListener('input', () => {
-                const value = input.value.toLowerCase();
-                if (value.length < 2) {
+                const inputValue = input.value.toLowerCase();
+                if (inputValue.length < 2) {
                     suggestionBox.classList.add('hidden');
                     return;
                 }
 
-                const suggestions = [...new Set(allFetchedRecords
-                    .map(record => record[fieldName])
-                    .filter(item => item.toLowerCase().includes(value))
-                )];
+                const filteredRecords = allFetchedRecords.filter(record => 
+                    record[fieldName].toLowerCase().includes(inputValue)
+                );
+
+                const uniqueSuggestions = [];
+                const seenValues = new Set();
+                for (const record of filteredRecords) {
+                    const fieldValue = record[fieldName];
+                    if (!seenValues.has(fieldValue.toLowerCase())) {
+                        uniqueSuggestions.push(record);
+                        seenValues.add(fieldValue.toLowerCase());
+                    }
+                }
 
                 suggestionBox.innerHTML = '';
-                if (suggestions.length > 0) {
-                    suggestions.slice(0, 5).forEach(suggestion => { // Limit to 5 suggestions
+                if (uniqueSuggestions.length > 0) {
+                    uniqueSuggestions.slice(0, 5).forEach(record => {
                         const item = document.createElement('div');
                         item.classList.add('suggestion-item');
-                        item.textContent = suggestion;
+                        item.textContent = record[fieldName];
                         item.addEventListener('click', () => {
-                            input.value = suggestion;
+                            if (onSelectCallback) {
+                                onSelectCallback(record);
+                            } else {
+                                input.value = record[fieldName];
+                            }
                             suggestionBox.classList.add('hidden');
                         });
                         suggestionBox.appendChild(item);
@@ -1034,11 +1047,22 @@
         function initialize() {
             renderTable();
             fetchRecords(); // Fetch data on load for suggestions
-            setupAutocomplete('patient-name', 'patient-name-suggestions', 'patientName');
-            setupAutocomplete('patient-id', 'patient-id-suggestions', 'patientId');
-            setupAutocomplete('test-name', 'test-name-suggestions', 'testName');
+            
+            setupAutocomplete('patient-name', 'patient-name-suggestions', 'patientName', (record) => {
+                document.getElementById('patient-name').value = record.patientName;
+                document.getElementById('patient-id').value = record.patientId;
+            });
+            
+            setupAutocomplete('patient-id', 'patient-id-suggestions', 'patientId', (record) => {
+                document.getElementById('patient-id').value = record.patientId;
+            });
+
+            setupAutocomplete('test-name', 'test-name-suggestions', 'testName', (record) => {
+                document.getElementById('test-name').value = record.testName;
+            });
         }
 
     </script>
 </body>
 </html>
+
