@@ -192,13 +192,13 @@
                 <div class="bg-white p-6 rounded-lg shadow-md mb-8 no-print">
                     <h2 class="text-lg font-semibold mb-4 text-gray-800">Tambah Ujian</h2>
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div class="relative">
+                            <input type="text" id="patient-id" placeholder="No. KP / RN" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" autocomplete="off">
+                            <div id="patient-id-suggestions" class="autocomplete-suggestions hidden"></div>
+                        </div>
                         <div class="md:col-span-2 relative">
                             <input type="text" id="patient-name" placeholder="Nama Pesakit" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" autocomplete="off">
                             <div id="patient-name-suggestions" class="autocomplete-suggestions hidden"></div>
-                        </div>
-                         <div class="relative">
-                            <input type="text" id="patient-id" placeholder="No. KP / RN" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" autocomplete="off">
-                            <div id="patient-id-suggestions" class="autocomplete-suggestions hidden"></div>
                         </div>
                         <div class="md:col-span-2 relative">
                             <input type="text" id="test-name" placeholder="Nama Ujian (cth: FBC, RP)" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" autocomplete="off">
@@ -465,7 +465,7 @@
                 document.getElementById('patient-name').value = '';
                 document.getElementById('patient-id').value = '';
                 document.getElementById('test-name').value = '';
-                document.getElementById('patient-name').focus();
+                document.getElementById('patient-id').focus();
             } else {
                 showToast('Sila isi semua maklumat pesakit.', true);
             }
@@ -643,7 +643,7 @@
                 populateFilterOptions();
                 
                 if (isOnRecordsPage) {
-                    renderRecordsTable(allFetchedRecords);
+                    applyFilters(); // Apply filters which will also render the table
                 }
 
             } catch (error) {
@@ -669,9 +669,8 @@
             const paginatedRecords = records.slice(startIndex, endIndex);
 
             if (paginatedRecords.length === 0 && records.length > 0) {
-                // If on a page with no records (e.g., after deleting last item on a page)
                 currentPage = Math.max(1, currentPage - 1);
-                renderRecordsTable(records); // Re-render with the new page
+                renderRecordsTable(records);
                 return;
             }
             
@@ -713,7 +712,6 @@
 
             if (totalPages <= 1) return;
 
-            // Previous Button
             const prevButton = document.createElement('button');
             prevButton.innerHTML = '&laquo;';
             prevButton.className = 'px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50';
@@ -721,12 +719,9 @@
                 prevButton.disabled = true;
                 prevButton.classList.add('opacity-50', 'cursor-not-allowed');
             }
-            prevButton.addEventListener('click', () => {
-                goToPage(currentPage - 1);
-            });
+            prevButton.addEventListener('click', () => goToPage(currentPage - 1));
             paginationControls.appendChild(prevButton);
 
-            // Page Numbers
             for (let i = 1; i <= totalPages; i++) {
                 const pageButton = document.createElement('button');
                 pageButton.textContent = i;
@@ -736,13 +731,10 @@
                 } else {
                     pageButton.className += ' bg-white text-gray-700 hover:bg-gray-50';
                 }
-                pageButton.addEventListener('click', () => {
-                    goToPage(i);
-                });
+                pageButton.addEventListener('click', () => goToPage(i));
                 paginationControls.appendChild(pageButton);
             }
 
-            // Next Button
             const nextButton = document.createElement('button');
             nextButton.innerHTML = '&raquo;';
             nextButton.className = 'px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50';
@@ -750,15 +742,13 @@
                 nextButton.disabled = true;
                 nextButton.classList.add('opacity-50', 'cursor-not-allowed');
             }
-            nextButton.addEventListener('click', () => {
-                goToPage(currentPage + 1);
-            });
+            nextButton.addEventListener('click', () => goToPage(currentPage + 1));
             paginationControls.appendChild(nextButton);
         }
         
         function goToPage(pageNumber) {
             currentPage = pageNumber;
-            renderRecordsTable(currentlyDisplayedRecords);
+            applyFilters();
         }
 
         function populateFilterOptions() {
@@ -771,7 +761,6 @@
         }
 
         function applyFilters() {
-            currentPage = 1;
             const nameFilter = document.getElementById('filter-name').value.toLowerCase();
             const idFilter = document.getElementById('filter-id').value.toLowerCase();
             const centerFilter = document.getElementById('filter-center').value;
@@ -796,6 +785,11 @@
 
             renderRecordsTable(filteredRecords);
         }
+        
+        document.getElementById('apply-filters-button').addEventListener('click', () => {
+            currentPage = 1;
+            applyFilters();
+        });
 
         function clearFilters() {
             currentPage = 1;
@@ -861,9 +855,8 @@
                 try {
                     await deleteDoc(doc(db, "bloodTestRecords", docId));
                     showToast('Rekod berjaya dipadam.');
-                    await fetchRecords(); // Refresh the entire list
-                    // After fetching, re-render the current view (which is the records page)
-                    applyFilters(); // Re-apply filters to show the correct paginated view
+                    await fetchRecords(); 
+                    applyFilters();
                 } catch (error) {
                     console.error("Error deleting record: ", error);
                     showToast("Gagal memadam rekod.", true);
@@ -1016,7 +1009,7 @@
         document.getElementById('print-save-button').addEventListener('click', printAndSave);
         document.getElementById('add-patient-button').addEventListener('click', addPatient);
         document.getElementById('back-to-main-button').addEventListener('click', showMainPage);
-        document.getElementById('apply-filters-button').addEventListener('click', applyFilters);
+        
         document.getElementById('clear-filters-button').addEventListener('click', clearFilters);
         document.getElementById('print-filtered-button').addEventListener('click', printFiltered);
         
@@ -1055,6 +1048,7 @@
             
             setupAutocomplete('patient-id', 'patient-id-suggestions', 'patientId', (record) => {
                 document.getElementById('patient-id').value = record.patientId;
+                document.getElementById('patient-name').value = record.patientName;
             });
 
             setupAutocomplete('test-name', 'test-name-suggestions', 'testName', (record) => {
@@ -1065,4 +1059,5 @@
     </script>
 </body>
 </html>
+
 
